@@ -82,6 +82,23 @@ def find_comport(pid, vid, baud):
             ser_port = ser_port.group(1)
             return ser_port
     
+    elif "darwin" in sys.platform:
+
+        # List the serial devices available
+        try:
+            stdout = subprocess.check_output("ls /dev/cu.usbmodem*", stderr=subprocess.STDOUT, shell = True).decode("utf-8").strip()
+            if not stdout:
+                handle_missing_serial_port()
+        except subprocess.CalledProcessError:
+            print(f"Error listing serial ports: {e.output.decode('utf8').strip()}")
+            handle_missing_serial_port()
+
+        # Guess the serial device
+        ser_port = re.search("(/dev/cu.usbmodem[0-9]*)", stdout)
+        if ser_port:
+            ser_port = ser_port.group(1)
+            return ser_port
+    
     else:
         print(f"Unknown platform: {sys.platform}")
         exit()
