@@ -104,11 +104,11 @@ def find_comport(pid, vid, baud):
         exit()
 
 
-def incoming_message(s):
-    s = "hello" # for testing purpose
-    # print(f"{s.readline().decode('utf-8').strip()}")
-    # s = s.readline().decode('utf-8').strip()
-    # print(f"text s: {s}")
+def handle_incoming_serial_data(s):
+    #s = "hello" # for testing purpose
+    print(f"{s.readline().decode('utf-8').strip()}")
+    s = s.readline().decode('utf-8').strip()
+    print(f"text s: {s}")
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={s}"
     requests.get(url = url)
 
@@ -127,11 +127,11 @@ def tele_alert():
         while True:
             # Commenting this out for now to test telebot alerts
             # Get the number of characters ready to be read
-            # if s.in_waiting > 0:
-            #     incoming_message(s)
+            if s.in_waiting > 0:
+                handle_incoming_serial_data(s)
             
             # for testing
-            incoming_message(s)
+            #handle_incoming_serial_data(s)
 
 
 @app.route("/tele_alert")
