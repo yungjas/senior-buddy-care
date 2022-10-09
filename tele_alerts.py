@@ -134,7 +134,15 @@ def tele_alert():
 
 @app.route("/tele_alert")
 def tele():
-    flask.Response(tele_alert(), mimetype="text/event-stream")
+    try:
+        flask.Response(tele_alert(), mimetype="text/event-stream")
+    except Exception as e:
+        return flask.jsonify(
+            {
+                "code": 500,
+                "message": "Unable to find microbit"
+            }
+        ), 500
 
 
 if __name__ == "__main__":
