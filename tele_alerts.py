@@ -105,10 +105,10 @@ def find_comport(pid, vid, baud):
 
 
 def incoming_message(s):
+    s = "hello" # for testing purpose
     # print(f"{s.readline().decode('utf-8').strip()}")
     # s = s.readline().decode('utf-8').strip()
     # print(f"text s: {s}")
-    s = "hello" # for testing purpose
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={s}"
     requests.get(url = url)
 
@@ -129,6 +129,8 @@ def tele_alert():
             # Get the number of characters ready to be read
             # if s.in_waiting > 0:
             #     incoming_message(s)
+            
+            # for testing
             incoming_message(s)
 
 
@@ -140,7 +142,7 @@ def tele():
         return flask.jsonify(
             {
                 "code": 500,
-                "message": "Unable to find microbit"
+                "message": str(e)
             }
         ), 500
 
