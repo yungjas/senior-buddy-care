@@ -7,6 +7,9 @@ import os
 import sys
 import subprocess
 import re
+import mysql.connector
+
+from datetime import datetime
 
 PID_MICROBIT = 516
 VID_MICROBIT = 3368
@@ -17,7 +20,11 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
 app = flask.Flask(__name__)
-app.debug = True
+
+# DB configs
+conn = mysql.connector.connect(user="root", password="root", host="127.0.0.1", port="3316", database="senior_buddies")
+cursor = conn.cursor()
+
 
 # Handles the case when the serial port can't be found
 def handle_missing_serial_port() -> None:
@@ -104,13 +111,23 @@ def find_comport(pid, vid, baud):
         exit()
 
 
-def handle_incoming_serial_data(s):
-    #s = "hello" # for testing purpose
-    print(f"{s.readline().decode('utf-8').strip()}")
+def handle_incoming_serial_data(s, option):
     s = s.readline().decode('utf-8').strip()
     print(f"text s: {s}")
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={s}"
-    requests.get(url = url)
+    
+    if option == "DEBUG":
+        #s = "hello" # for testing purpose
+        # print(f"{s.readline().decode('utf-8').strip()}")
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={s}"
+        requests.get(url=url)
+    elif option == "WEIGHT":
+        test_weight = 10.85
+        current_datetime = datetime.now()
+        # save data to db
+        insert_query = """INSERT INTO weight (weight_data, time_created) VALUES (%s, %s)"""
+        data = (test_weight, current_datetime)
+        cursor.execute(insert_query, data)
+        conn.commit()
 
 
 def tele_alert():
@@ -128,24 +145,24 @@ def tele_alert():
             # Commenting this out for now to test telebot alerts
             # Get the number of characters ready to be read
             if s.in_waiting > 0:
-                handle_incoming_serial_data(s)
+                handle_incoming_serial_data(s, "DEBUG")
             
             # for testing
             #handle_incoming_serial_data(s)
 
 
-@app.route("/tele_alert")
-def tele():
-    try:
-        flask.Response(tele_alert(), mimetype="text/event-stream")
-    except Exception as e:
-        return flask.jsonify(
-            {
-                "code": 500,
-                "message": str(e)
-            }
-        ), 500
+# @app.route("/tele_alert")
+# def tele():
+#     try:
+#         flask.Response(tele_alert(), mimetype="text/event-stream")
+#     except Exception as e:
+#         return flask.jsonify(
+#             {
+#                 "code": 500,
+#                 "message": str(e)
+#             }
+#         ), 500
 
 
 if __name__ == "__main__":
-    app.run(port=8080, debug=True)
+    tele_alert()
