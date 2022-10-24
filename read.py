@@ -4,6 +4,7 @@ import time
 import math
 import requests
 import os
+import mysql.connector
 from dotenv import load_dotenv
 from ast import literal_eval as make_tuple
 
