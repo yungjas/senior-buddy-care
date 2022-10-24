@@ -16,6 +16,11 @@ TIMEOUT = 0.1
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
+# DB configs
+conn = mysql.connector.connect(user="root", password="root", host="127.0.0.1", port="3316", database="senior_buddies")
+cursor = conn.cursor()
+
+
 def find_comport(pid, vid, baud):
     ''' return a serial port '''
     ser_port = serial.Serial(timeout=TIMEOUT)
@@ -78,6 +83,8 @@ def main():
     activites = []
     while True:
         line = ser_micro.readline().decode('utf-8')
+        # receiving data here for accelerometer, weight and light (weight and light havent done)
+        # may need to split between accelerometer, weight, and light
         if len(line) == 0:
             continue
         if "C" in line:
