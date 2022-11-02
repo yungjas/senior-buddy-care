@@ -1,13 +1,12 @@
-# run this in makecode
+# new code (run in micropython editor)
+# Imports go at the top
+from microbit import *
+import radio
 
-radio.set_group(6)
+radio.on()
+radio.config(group=5)
 
-def on_received_string(receivedString):
-    serial.write_line(receivedString)
-radio.on_received_string(on_received_string)
-
-# test function
-def on_button_pressed_a():
-    #radio.send_string("hello")
-    serial.write_line("hello")
-input.on_button_pressed(Button.A, on_button_pressed_a)
+# Code in a 'while True:' loop repeats forever
+while True:
+    acc = radio.receive()
+    print(acc)
