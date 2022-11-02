@@ -5,6 +5,7 @@ import math
 import requests
 import os
 import mysql.connector
+import datetime
 from dotenv import load_dotenv
 from ast import literal_eval as make_tuple
 
@@ -84,14 +85,15 @@ def main():
     activites = []
     while True:
         line = ser_micro.readline().decode('utf-8')
-        # receiving data here for accelerometer, weight and light (weight and light havent done)
-        # may need to split between accelerometer, weight, and light
         if len(line) == 0:
             continue
         if "C" in line:
             break
         if "B" in line:
             break
+        if "Weight" in line:
+            print(line)
+        
         line = line.split(" A")[0]
 
         if time.time() - timestamp > 5:
@@ -130,8 +132,15 @@ def main():
                     #trigger alert
                     if last_fall == 0 or time.time() - last_fall > 59:
                         last_fall = time.time()
+                        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         print("ALERT")
                         send_telegram_msg("Fall detected")
+                        # saving to db
+                        insert_query = """INSERT INTO acceleration (acc_data, time_created) VALUES (%s, %s)"""
+                        data = (averageOf30diff, current_datetime)
+                        cursor.execute(insert_query, data)
+                        conn.commit()
+                        
                     fall_tilt.append(get_tilt(ax,ay,az))
                 else:
                     if len(fall_tilt) > 0:
