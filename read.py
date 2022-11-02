@@ -72,7 +72,7 @@ def save_db(option, data, current_datetime):
     cursor.execute(insert_query, data_db)
     conn.commit()
 
-def main():
+def accelerometer(line):
     global a
     global x
     global y
@@ -83,69 +83,53 @@ def main():
     global avgA
     global last_fall
     global timestamp
-    print('looking for microbit')
-    ser_micro = find_comport(PID_MICROBIT, VID_MICROBIT, 115200)
-    if not ser_micro:
-        print('microbit not found')
-        return
-    print('opening and monitoring microbit port')
-    ser_micro.open()
+
     fall_tilt = []
     tilts = []
     activites = []
-    while True:
-        line = ser_micro.readline().decode('utf-8')
-        if len(line) == 0:
-            continue
-        if "C" in line:
-            break
-        if "B" in line:
-            break
-        if "Weight" in line:
-            print(line)
-        
-        line = line.split(" A")[0]
 
-        if time.time() - timestamp > 5:
-                timestamp = time.time()
-                print("clearin")
-                x = x[-300:]
-                y = y[-300:]
-                z = z[-300:]
-                a = a[-300:]
-                ma20 = ma20[-300:]
-                ma250 = ma250[-300:]
-                diffma = diffma[-300:]
-                avgA = avgA[-300:]
+    line = line.split(" A")[0]
 
-        try:
-            acc = make_tuple(line)
-            ax = int(acc[0])
-            ay = int(acc[1])
-            az = int(acc[2])
-            total_acc = math.sqrt(ax**2 + ay**2 + az**2)
-            a.append(total_acc)
-            if len(a) >= 20:
-                d20 = sum(a[len(a)-20:])/20
-                ma20.append(d20)
+    if time.time() - timestamp > 5:
+        timestamp = time.time()
+        print("clearin")
+        x = x[-300:]
+        y = y[-300:]
+        z = z[-300:]
+        a = a[-300:]
+        ma20 = ma20[-300:]
+        ma250 = ma250[-300:]
+        diffma = diffma[-300:]
+        avgA = avgA[-300:]
+
+    try:
+        acc = make_tuple(line)
+        ax = int(acc[0])
+        ay = int(acc[1])
+        az = int(acc[2])
+        total_acc = math.sqrt(ax**2 + ay**2 + az**2)
+        a.append(total_acc)
+        if len(a) >= 20:
+            d20 = sum(a[len(a)-20:])/20
+            ma20.append(d20)
             
-            if len(a) >= 250:
-                d250 = sum(a[len(a)-250:])/250
-                ma250.append(d250)
-                d2f250 = abs(d250-d20)
-                diffma.append(d2f250)
-                avgA.append(sum(diffma[len(diffma)-20:])/20)
+        if len(a) >= 250:
+            d250 = sum(a[len(a)-250:])/250
+            ma250.append(d250)
+            d2f250 = abs(d250-d20)
+            diffma.append(d2f250)
+            avgA.append(sum(diffma[len(diffma)-20:])/20)
                 
-            if len(a) >= 300:
-                averageOf30diff = sum(diffma[len(diffma)-300:])/300
-                if averageOf30diff > 150:
-                    #trigger alert
-                    if last_fall == 0 or time.time() - last_fall > 59:
-                        last_fall = time.time()
-                        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        print("ALERT")
-                        save_db("A", averageOf30diff, current_datetime)
-                        send_telegram_msg(f"Fall detected at {current_datetime}. Please send help immediately")
+        if len(a) >= 300:
+            averageOf30diff = sum(diffma[len(diffma)-300:])/300
+            if averageOf30diff > 150:
+                #trigger alert
+                if last_fall == 0 or time.time() - last_fall > 59:
+                    last_fall = time.time()
+                    current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    print("ALERT")
+                    save_db("A", averageOf30diff, current_datetime)
+                    send_telegram_msg(f"Fall detected at {current_datetime}. Please send help immediately")
                         
                     fall_tilt.append(get_tilt(ax,ay,az))
                 else:
@@ -154,15 +138,35 @@ def main():
                         print(fall_tilt[-1])
                         fall_tilt.clear()
                     if averageOf30diff > 20:
-                        continue
                         print("walking")
                     else:
-                        continue
                         print("resting")
 
-        except Exception as e: 
-            print(e)
+    except Exception as e: 
+        print(e)
 
+def main():
+    print('looking for microbit')
+    ser_micro = find_comport(PID_MICROBIT, VID_MICROBIT, 115200)
+    if not ser_micro:
+        print('microbit not found')
+        return
+    print('opening and monitoring microbit port')
+    ser_micro.open()
+    
+    while True:
+        line = ser_micro.readline().decode('utf-8')
+        if len(line) == 0:
+            continue
+        if "C" in line:
+            break
+        if "B" in line:
+            break
+        if "A" in line:
+            accelerometer(line)
+        if "Weight" in line:
+            print(line)
+        
     ser_micro.close()
 
 x = []

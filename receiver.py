@@ -8,5 +8,5 @@ radio.config(group=5)
 
 # Code in a 'while True:' loop repeats forever
 while True:
-    acc = radio.receive()
-    print(acc)
+    data = radio.receive()
+    print(data)
