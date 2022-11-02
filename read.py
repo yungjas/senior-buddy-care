@@ -62,6 +62,16 @@ def send_telegram_msg(s):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={s}"
     requests.get(url = url)
 
+def save_db(option, data, current_datetime):
+    if option == "A":
+        insert_query = """INSERT INTO acceleration (acc_data, time_created) VALUES (%s, %s)"""
+    elif option == "W":
+        insert_query = """INSERT INTO weight (weight_data, time_created) VALUES (%s, %s)"""
+    
+    data_db = (data, current_datetime)
+    cursor.execute(insert_query, data_db)
+    conn.commit()
+
 def main():
     global a
     global x
@@ -134,12 +144,8 @@ def main():
                         last_fall = time.time()
                         current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         print("ALERT")
-                        send_telegram_msg("Fall detected")
-                        # saving to db
-                        insert_query = """INSERT INTO acceleration (acc_data, time_created) VALUES (%s, %s)"""
-                        data = (averageOf30diff, current_datetime)
-                        cursor.execute(insert_query, data)
-                        conn.commit()
+                        save_db("A", averageOf30diff, current_datetime)
+                        send_telegram_msg(f"Fall detected at {current_datetime}. Please send help immediately")
                         
                     fall_tilt.append(get_tilt(ax,ay,az))
                 else:
