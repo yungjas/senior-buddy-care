@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<body>
+
+<div style="display: flex; width: 100%;">
+    <div class="my-4 col">
+        <canvas id="myChart1" style="width:100%;max-width:600px"></canvas>
+    </div>
+    <div class="my-4 col">
+        <canvas id="myChart2" style="width:100%;max-width:600px"></canvas>
+    </div>
+</div>
+<canvas id="myChart3" style="width:50%;max-width:600px"></canvas>
+<canvas id="myChart4" style="width:50%;max-width:600px"></canvas>
+
+
+<script>
+var xValues = [50,60,70,80,90,100,110,120,130,140,150];
+var yValues = [7,8,8,9,9,9,10,11,14,14,15];
+const walkImage = new Image(20,20);
+const restImage = new Image(20,20);
+const fallImage = new Image(20,20);
+walkImage.src = 'https://cdn-icons-png.flaticon.com/128/5340/5340966.png';
+restImage.src = 'https://cdn-icons-png.flaticon.com/128/680/680593.png';
+fallImage.src = 'https://cdn-icons-png.flaticon.com/128/4939/4939171.png';
+var pointsArray = [];
+
+for(var i = 0; i < yValues.length; i++){
+  if(yValues[i] < 10){
+    pointsArray.push(restImage);
+  }
+  else if(yValues[i] < 12){
+    pointsArray.push(walkImage);
+  }
+  else{
+    pointsArray.push(fallImage);
+  }
+}
+
+new Chart("myChart1", {
+  type: "line",
+  data: {
+    labels: xValues,
+    datasets: [{
+      fill: false,
+      lineTension: 0,
+      backgroundColor: "rgba(0,0,255,1.0)",
+      borderColor: "rgba(0,0,255,0.1)",
+      data: yValues
+    }]
+  },
+  options: {
+    elements: {
+      point: {
+        pointStyle: pointsArray
+      }
+    },
+    legend: {display: false},
+    scales: {
+      yAxes: [{ticks: {min: 6, max:16}}],
+    }
+  }
+});
+
+var xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
+var yValues = [55, 49, 44, 24, 15];
+var barColors = ["red", "green","blue","orange","brown"];
+
+new Chart("myChart2", {
+  type: "bar",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    legend: {display: false},
+    title: {
+      display: true,
+      text: "World Wine Production 2018"
+    }
+  }
+});
+
+var xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
+var yValues = [55, 49, 44, 24, 15];
+var barColors = [
+  "#b91d47",
+  "#00aba9",
+  "#2b5797",
+  "#e8c3b9",
+  "#1e7145"
+];
+
+new Chart("myChart3", {
+  type: "pie",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    title: {
+      display: true,
+      text: "World Wide Wine Production 2018"
+    }
+  }
+});
+
+
+
+</script>
+
+</body>
+</html>
+
+
