@@ -142,7 +142,7 @@ def main():
                             current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             print("ALERT")
                             save_db("A", averageOf30diff, current_datetime)
-                            send_telegram_msg(f"Alice has fell. Please send help immediately.")
+                            send_telegram_msg(f"Fall detected at Alice's house. \nPlease send help immediately.")
                             
                         fall_tilt.append(get_tilt(ax,ay,az))
                     else:
