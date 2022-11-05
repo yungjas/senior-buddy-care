@@ -72,6 +72,10 @@ def save_db(option, data, current_datetime):
     cursor.execute(insert_query, data_db)
     conn.commit()
 
+
+def most_frequent(List):
+    return max(set(List), key = List.count)    
+
 def main():
     global a
     global x
@@ -105,6 +109,11 @@ def main():
             line = line.split(" A")[0]
             if time.time() - timestamp > 5:
                     timestamp = time.time()
+                    # =================================INSERT ACCELERATOR DATA HERE=================================
+                    #save_db() #insert average acceleration reading and most frequent tilt reading
+                    # most_frequent(tilts) #will return most frequent tilt
+                    # sum(avgA)/len(avgA) #will return average acceleration reading
+                    # ==============================================================================================
                     print("clearin")
                     x = x[-300:]
                     y = y[-300:]
@@ -134,29 +143,29 @@ def main():
                     avgA.append(sum(diffma[len(diffma)-20:])/20)
                     
                 if len(a) >= 300:
+
                     averageOf30diff = sum(diffma[len(diffma)-300:])/300
-                    if averageOf30diff > 150:
-                        #trigger alert
-                        if last_fall == 0 or time.time() - last_fall > 59:
-                            last_fall = time.time()
-                            current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            print("ALERT")
-                            save_db("A", averageOf30diff, current_datetime)
-                            send_telegram_msg(f"Fall detected at Alice's house. \nPlease send help immediately.")
-                            
+                    if averageOf30diff > 150:  
+                        #======================== FALLING ======================================================
                         fall_tilt.append(get_tilt(ax,ay,az))
                     else:
-                        if len(fall_tilt) > 0:
-                            print("fell")
-                            print(fall_tilt[-1])
+                        if len(fall_tilt) > 0: 
+                            #====================================FALL ENDED==========================================
+                            #trigger alert
+                            if last_fall == 0 or time.time() - last_fall > 59:
+                                last_fall = time.time()
+                                print("ALERT")
+                                save_db("A", averageOf30diff, current_datetime)
+                                send_telegram_msg(f"Fall detected at Alice's house. \nPlease send help immediately.")
+                            save_db("A", averageOf30diff, current_datetime) #use fall_tilt[-1] to retrieve last tilt position
                             fall_tilt.clear()
                         if averageOf30diff > 20:
                             continue
-                            print("walking")
+                            # activites.append("Walking")
                         else:
                             continue
-                            print("resting")
-
+                            # activites.append("Resting")
+                    tilts.append(get_tilt(ax,ay,az))
             except Exception as e: 
                 print(e)
         
