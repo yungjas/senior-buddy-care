@@ -156,7 +156,6 @@ def main():
                             if last_fall == 0 or time.time() - last_fall > 59:
                                 last_fall = time.time()
                                 print("ALERT")
-                                #save_db("A", averageOf30diff, current_datetime)
                                 send_telegram_msg(f"Fall detected at Alice's house. \nPlease send help immediately.")
                             
                             #use fall_tilt[-1] to retrieve last tilt position
