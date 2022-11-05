@@ -62,13 +62,16 @@ def send_telegram_msg(s):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={s}"
     requests.get(url = url)
 
-def save_db(option, data, current_datetime):
+def save_db(option, data):
     if option == "A":
-        insert_query = """INSERT INTO acceleration (acc_data, time_created) VALUES (%s, %s)"""
-    elif option == "W":
-        insert_query = """INSERT INTO weight (weight_data, time_created) VALUES (%s, %s)"""
+        acc = data[0]
+        tilt = data[1]
+        insert_query = """INSERT INTO acceleration (acc, tilt) VALUES (%s, %s)"""
+        data_db = (acc, tilt)
+    # elif option == "W":
+    #     insert_query = """INSERT INTO weight (weight_data) VALUES (%s)"""
     
-    data_db = (data, current_datetime)
+    #data_db = (data)
     cursor.execute(insert_query, data_db)
     conn.commit()
 
@@ -110,10 +113,8 @@ def main():
             if time.time() - timestamp > 5:
                     timestamp = time.time()
                     # =================================INSERT ACCELERATOR DATA HERE=================================
-                    #save_db() #insert average acceleration reading and most frequent tilt reading
-                    # most_frequent(tilts) #will return most frequent tilt
-                    # sum(avgA)/len(avgA) #will return average acceleration reading
-                    # ==============================================================================================
+                    acc_data = [sum(avgA)/len(avgA), most_frequent(tilts)]
+                    save_db("A", acc_data) 
                     print("clearin")
                     x = x[-300:]
                     y = y[-300:]
@@ -155,9 +156,12 @@ def main():
                             if last_fall == 0 or time.time() - last_fall > 59:
                                 last_fall = time.time()
                                 print("ALERT")
-                                save_db("A", averageOf30diff, current_datetime)
+                                #save_db("A", averageOf30diff, current_datetime)
                                 send_telegram_msg(f"Fall detected at Alice's house. \nPlease send help immediately.")
-                            save_db("A", averageOf30diff, current_datetime) #use fall_tilt[-1] to retrieve last tilt position
+                            
+                            #use fall_tilt[-1] to retrieve last tilt position
+                            acc_data = [averageOf30diff, fall_tilt[-1]]
+                            save_db("A", acc_data) 
                             fall_tilt.clear()
                         if averageOf30diff > 20:
                             continue
