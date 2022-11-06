@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Senior Buddy Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body style="background-color: #b7d8ed;">
+<div class="container-fluid">
+  <div class="row text-center">
+    <div class="my-12 col">
+      <h2>Senior Buddy Care Dashboard for Alice</h2>
+      <select id="date-dropdown" onchange="changeDate()">
+        <option>--SELECT DATE--</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="my-6 col">
+      <div id="calendar_basic" style="width: 1000px; height: 350px;"></div>
+    </div>
+    <div class="my-6 col">
+      <canvas id="pillWeightLineChart"></canvas>
+    </div>
+  </div>
+  <div class="row">
+    <div class="my-6 col">
+      <canvas id="activityLineChart"></canvas>
+    </div>
+    <div class="my-6 col">
+     <canvas id="activityPieChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  var SELECTED_DATE = "";
+
+  fetch("http://localhost:5001/dates")
+  .then((response)=>response.json())
+  .then((data)=>{
+    var dropdown = document.getElementById('date-dropdown');
+    for(d of data.data){
+      var x = new Date(d.time_created).toISOString().slice(0, 10);
+      dropdown.innerHTML += `<option>${x}</option>`
+    }
+  })
+
+  function changeDate(){
+    var date = document.getElementById('date-dropdown').value;
+    generate_pill_chart(date);
+    generate_activity_chart(date);
+  }
+</script>
+
+<!-- Activity Charts Script -->
+<script src="js/activity.js"></script>
+<!-- Pill Weight Charts Script -->
+<script src="js/pill-weight.js"></script>
+<!-- Calendar Charts Script -->
+<script src="js/calendar.js"></script>
+
+
+</body>
+</html>
+
+
