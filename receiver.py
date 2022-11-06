@@ -10,3 +10,14 @@ radio.config(group=5)
 while True:
     data = radio.receive()
     print(data)
+
+# makecode
+radio.set_group(5)
+
+def on_received_string(receivedString):
+    serial.write_string(receivedString)
+    #basic.show_string(receivedString)
+
+def on_forever():
+    radio.on_received_string(on_received_string)
+basic.forever(on_forever)

@@ -14,6 +14,7 @@ load_dotenv()
 PID_MICROBIT = 516
 VID_MICROBIT = 3368
 TIMEOUT = 0.1
+COM = "COM8"
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
@@ -23,7 +24,7 @@ conn = mysql.connector.connect(user="root", password="root", host="127.0.0.1", p
 cursor = conn.cursor()
 
 
-def find_comport(pid, vid, baud):
+def find_comport(pid, vid, baud, com):
     ''' return a serial port '''
     ser_port = serial.Serial(timeout=TIMEOUT)
     ser_port.baudrate = baud
@@ -35,7 +36,7 @@ def find_comport(pid, vid, baud):
             print('pid: {} vid: {}'.format(p.pid, p.vid))
         except AttributeError:
             continue
-        if (p.pid == pid) and (p.vid == vid):
+        if (p.pid == pid) and (p.vid == vid) and (p.name == com):
             print('found target device pid: {} vid: {} port: {}'.format(
                 p.pid, p.vid, p.device))
             ser_port.port = str(p.device)
@@ -91,7 +92,7 @@ def main():
     global last_fall
     global timestamp
     print('looking for microbit')
-    ser_micro = find_comport(PID_MICROBIT, VID_MICROBIT, 115200)
+    ser_micro = find_comport(PID_MICROBIT, VID_MICROBIT, 115200, COM)
     if not ser_micro:
         print('microbit not found')
         return
@@ -109,11 +110,15 @@ def main():
         if "B" in line:
             break
         if "A" in line:
+            #print(f"line:{line}")
             line = line.split(" A")[0]
             if time.time() - timestamp > 5:
                     timestamp = time.time()
                     # =================================INSERT ACCELERATOR DATA HERE=================================
-                    acc_data = [sum(avgA)/len(avgA), most_frequent(tilts)]
+                    if tilts:
+                        acc_data = (sum(avgA)/len(avgA), most_frequent(tilts))
+                    else:
+                        continue
                     save_db("A", acc_data) 
                     print("clearin")
                     x = x[-300:]
@@ -126,6 +131,8 @@ def main():
                     avgA = avgA[-300:]
 
             try:
+                #acc = line.split(",")
+                #print(f"acc: {acc}")
                 acc = make_tuple(line)
                 ax = int(acc[0])
                 ay = int(acc[1])
@@ -159,7 +166,7 @@ def main():
                                 send_telegram_msg(f"Fall detected at Alice's house. \nPlease send help immediately.")
                             
                             #use fall_tilt[-1] to retrieve last tilt position
-                            acc_data = [averageOf30diff, fall_tilt[-1]]
+                            acc_data = (averageOf30diff, fall_tilt[-1])
                             save_db("A", acc_data) 
                             fall_tilt.clear()
                         if averageOf30diff > 20:
@@ -173,8 +180,9 @@ def main():
                 print(e)
         
         # add checks for weight and proximity here
-        if "Weight" in line:
-            print(line)
+        # if 
+        if "g" in line:
+            print(f"weight:{line}")
 
     ser_micro.close()
 
