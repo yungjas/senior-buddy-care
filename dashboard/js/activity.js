@@ -37,8 +37,17 @@ function generate_activity_chart(date){
     }
 
     var activityArray = [rest,walk,fall];
+    console.log(window.activityLineChart)
+    if( window.ALC!==undefined){
+      window.ALC.destroy();
+    }
 
-    new Chart("activityLineChart", {
+    if( window.APC!==undefined){
+      window.APC.destroy();
+    }
+
+
+    window.ALC = new Chart("activityLineChart", {
       type: "line",
       data: {
         labels: chartData.map(item => item.time_created),
@@ -81,7 +90,7 @@ function generate_activity_chart(date){
       }
     });
 
-    new Chart("activityPieChart", {
+    window.APC = new Chart("activityPieChart", {
       type: "pie",
       data: {
         labels: ["rest","walk","fall"],

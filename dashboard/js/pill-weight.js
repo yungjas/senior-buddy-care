@@ -3,7 +3,10 @@ function generate_pill_chart(date){
   .then((response)=>response.json())
   .then((data)=>{
     var chartData = data.data;
-    new Chart("pillWeightLineChart", {
+    if( window.PWLC!==undefined){
+      window.PWLC.destroy();
+    }
+    window.PWLC = new Chart("pillWeightLineChart", {
       type: "line",
       data: {
         labels: chartData.map(item => item.time_created),
