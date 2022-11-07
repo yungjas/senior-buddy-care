@@ -3,6 +3,7 @@ import serial.tools.list_ports as list_ports
 import os
 import datetime
 import requests
+import mysql.connector
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,6 +15,10 @@ COM = "COM10"
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+
+# DB configs
+conn = mysql.connector.connect(user="root", password="root", host="127.0.0.1", port="3316", database="senior_buddies")
+cursor = conn.cursor()
 
 def find_comport(pid, vid, baud, com):
     ''' return a serial port '''
@@ -34,6 +39,12 @@ def find_comport(pid, vid, baud, com):
             return ser_port
     return None
 
+def save_db(option, data):
+    if option == "W":
+        insert_query = """INSERT INTO weight (weight_data) VALUES (%s)"""
+    cursor.execute(insert_query, data)
+    conn.commit()
+
 def send_telegram_msg(s):
     global BOT_TOKEN
     global CHAT_ID
@@ -49,16 +60,29 @@ def main():
         print('microbit not found')
         return
     print('opening and monitoring microbit port')
+    
     ser_micro.open()
     
     while True:
         line = ser_micro.readline().decode('utf-8')
         current_time = datetime.datetime.now().time()
+        set_time = datetime.time(hour = 12, minute = 00, second = 00)
 
         if "g" in line:
-            if current_time:
-                send_telegram_msg(line)
-    
+            weight = float(line.split("g")[0])
+            
+            try:
+                save_db("W", weight)
+            except Exception as e:
+                print(f"Error: {e}")
+            
+            if current_time > set_time and weight > 0:
+                print("Sending tele alert")
+                send_telegram_msg("EAT YOUR DAMN MEDS ALICE")
+        
+        else:
+            continue
+ 
     ser_micro.close()
 
 main()
