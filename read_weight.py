@@ -72,7 +72,7 @@ def main():
     while True:
         line = ser_micro.readline().decode('utf-8')
         current_time = datetime.now().time()
-        set_time = time(hour = 21, minute = 53, second = 00)
+        set_time = time(hour = 22, minute = 50, second = 00)
 
         if "g" in line:
             weight = float(line.split("g")[0])
@@ -91,7 +91,7 @@ def main():
                 #after 30 mins if user hasn't taken their meds yet
                 if (send_tele_msg_initial == True) and (send_tele_msg_complete == False) and ((datetime.combine(date.today(), current_time) - datetime.combine(date.today(), set_time)) >= timedelta(minutes=1)):
                     print("Sending another tele alert")
-                    send_telegram_msg("Hi Alice, it's been about 30 mins and you have not taken your medication yet, please remember to take them!")
+                    send_telegram_msg("Hi Alice, it's been about a couple of minutes and you have not taken your medication yet, please remember to take them!")
                     send_tele_msg_complete = True
         
         else:
