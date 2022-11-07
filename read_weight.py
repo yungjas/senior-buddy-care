@@ -1,10 +1,12 @@
 import serial
 import serial.tools.list_ports as list_ports
 import os
-import datetime
 import requests
 import mysql.connector
+# import datetime
+# import time
 from dotenv import load_dotenv
+from datetime import date, datetime, time, timedelta
 
 load_dotenv()
 
@@ -42,7 +44,8 @@ def find_comport(pid, vid, baud, com):
 def save_db(option, data):
     if option == "W":
         insert_query = """INSERT INTO weight (weight_data) VALUES (%s)"""
-    cursor.execute(insert_query, data)
+    data_db = (data,)
+    cursor.execute(insert_query, data_db)
     conn.commit()
 
 def send_telegram_msg(s):
@@ -62,23 +65,34 @@ def main():
     print('opening and monitoring microbit port')
     
     ser_micro.open()
-    
+
+    send_tele_msg_complete = False
+    send_tele_msg_initial = False
+
     while True:
         line = ser_micro.readline().decode('utf-8')
-        current_time = datetime.datetime.now().time()
-        set_time = datetime.time(hour = 12, minute = 00, second = 00)
+        current_time = datetime.now().time()
+        set_time = time(hour = 21, minute = 53, second = 00)
 
         if "g" in line:
             weight = float(line.split("g")[0])
             
-            try:
-                save_db("W", weight)
-            except Exception as e:
-                print(f"Error: {e}")
-            
-            if current_time > set_time and weight > 0:
-                print("Sending tele alert")
-                send_telegram_msg("EAT YOUR DAMN MEDS ALICE")
+            if weight > 0:
+                try:
+                    save_db("W", weight)
+                except Exception as e:
+                    print(f"Error: {e}")
+                
+                if current_time > set_time and send_tele_msg_complete == False and send_tele_msg_initial == False:
+                    print("Sending tele alert")
+                    send_telegram_msg("Hi Alice, it's time to take your medication!")
+                    send_tele_msg_initial = True
+
+                #after 30 mins if user hasn't taken their meds yet
+                if (send_tele_msg_initial == True) and (send_tele_msg_complete == False) and ((datetime.combine(date.today(), current_time) - datetime.combine(date.today(), set_time)) >= timedelta(minutes=1)):
+                    print("Sending another tele alert")
+                    send_telegram_msg("Hi Alice, it's been about 30 mins and you have not taken your medication yet, please remember to take them!")
+                    send_tele_msg_complete = True
         
         else:
             continue

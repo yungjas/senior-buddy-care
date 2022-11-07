@@ -69,13 +69,8 @@ def save_db(option, data):
         tilt = data[1]
         insert_query = """INSERT INTO acceleration (acc, tilt) VALUES (%s, %s)"""
         data_db = (acc, tilt)
-    # elif option == "W":
-    #     insert_query = """INSERT INTO weight (weight_data) VALUES (%s)"""
-    
-    #data_db = (data)
     cursor.execute(insert_query, data_db)
     conn.commit()
-
 
 def most_frequent(List):
     return max(set(List), key = List.count)    
